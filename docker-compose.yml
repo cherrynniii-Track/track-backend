@@ -5,11 +5,8 @@ services:
 
     restart: unless-stopped
 
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: track
-      MYSQL_USER: track
-      MYSQL_PASSWORD: track
+    env_file:
+      - .env
 
     ports:
       - "3307:3306"
