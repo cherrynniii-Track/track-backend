@@ -37,9 +37,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Authorization 헤더에서 JWT 추출
         String token = resolveToken(request);
 
-        // 토큰이 존재하고, 토큰이 유효하며, 아직 인증 정보가 없는 경우
+        // 토큰이 존재하고, 토큰이 유효하며, AccessToken이고, 아직 인증 정보가 없는 경우
         if (token != null
                 && jwtTokenProvider.validateToken(token)
+                && jwtTokenProvider.isAccessToken(token)
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             // JWT 안에 저장된 이메일 추출 -> 사용자 정보 조회
