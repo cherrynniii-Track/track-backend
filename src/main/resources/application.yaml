@@ -1,10 +1,12 @@
 spring:
+  profiles:
+    include: secret
   application:
     name: track
   datasource:
-    url: jdbc:mysql://localhost:3307/track
-    username: track
-    password: track
+    url: jdbc:mysql://localhost:3307/${database-name}
+    username: ${database-username}
+    password: ${database-password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -13,3 +15,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+jwt:
+  secret: ${jwt-secret}
+  access-token-expiration: 3600000
+  refresh-token-expiration: 1209600000
