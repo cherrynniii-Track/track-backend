@@ -1,15 +1,13 @@
 package com.track.track.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.track.track.AbstractIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
 
@@ -19,11 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * AuthController 통합 테스트
  */
-@Testcontainers
 @Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-class AuthControllerTest {
+class AuthControllerTest extends AbstractIntegrationTest {
 
     // HTTP 요청 보내는 객체
     @Autowired
