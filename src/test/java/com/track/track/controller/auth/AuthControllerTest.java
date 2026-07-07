@@ -1,4 +1,4 @@
-package com.track.track.controller;
+package com.track.track.controller.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.track.track.AbstractIntegrationTest;
@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * AuthController 통합 테스트
  */
-@Transactional
 class AuthControllerTest extends AbstractIntegrationTest {
 
     // HTTP 요청 보내는 객체

@@ -31,10 +31,10 @@ public class Project extends BaseTimeEntity {
     @Lob
     private String description;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
 
     @Builder
@@ -42,5 +42,15 @@ public class Project extends BaseTimeEntity {
         this.member = member;
         this.name = name;
         this.description = description;
+    }
+
+    public void update(String name, String description) {
+        if (name != null) {
+            this.name = name;
+        }
+
+        if (description != null) {
+            this.description = description;
+        }
     }
 }

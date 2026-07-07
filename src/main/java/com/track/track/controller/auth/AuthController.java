@@ -1,4 +1,4 @@
-package com.track.track.controller;
+package com.track.track.controller.auth;
 
 import com.track.track.dto.auth.LoginRequest;
 import com.track.track.dto.auth.LoginResponse;
