@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * AuthController 통합 테스트
  */
-@Transactional
 class AuthControllerTest extends AbstractIntegrationTest {
 
     // HTTP 요청 보내는 객체
