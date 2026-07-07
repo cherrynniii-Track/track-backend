@@ -1,4 +1,4 @@
-package com.track.track.controller;
+package com.track.track.controller.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.track.track.AbstractIntegrationTest;
