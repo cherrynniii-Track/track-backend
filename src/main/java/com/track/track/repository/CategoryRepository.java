@@ -11,4 +11,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     
     // 같은 프로젝트 내에서 카테고리 이름 중복 확인
     boolean existsByProjectIdAndName(Long projectId, String name);
+
+    // 자기 자신을 제외하고 같은 이름이 있는지 검사
+    boolean existsByProjectIdAndNameAndIdNot(Long projectId, String name, Long categoryId);
 }

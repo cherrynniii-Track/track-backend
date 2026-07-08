@@ -96,7 +96,7 @@ public class CategoryService {
         validateCategoryInProject(projectId, category);
 
         if (request.getName() != null) {
-            validateDuplicateName(projectId, request.getName());
+            validateDuplicateName(projectId, request.getName(), categoryId);
         }
 
         category.update(request.getName());
@@ -147,6 +147,18 @@ public class CategoryService {
      */
     private void validateDuplicateName(Long projectId, String name) {
         if (categoryRepository.existsByProjectIdAndName(projectId, name)) {
+            throw new BusinessException(ErrorCode.CATEGORY_DUPLICATED);
+        }
+    }
+
+    /**
+     * 자신을 제외하고 중복된 카테고리 이름이 있는지 검사
+     * @param projectId 프로젝트
+     * @param name 카테고리 이름
+     * @param categoryId 카테고리 ID
+     */
+    private void validateDuplicateName(Long projectId, String name, Long categoryId) {
+        if (categoryRepository.existsByProjectIdAndNameAndIdNot(projectId, name, categoryId)) {
             throw new BusinessException(ErrorCode.CATEGORY_DUPLICATED);
         }
     }
