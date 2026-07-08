@@ -5,6 +5,7 @@ import com.track.track.dto.category.CategoryResponse;
 import com.track.track.dto.category.CategoryUpdateRequest;
 import com.track.track.service.auth.CustomUserDetails;
 import com.track.track.service.category.CategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class CategoryController {
     public ResponseEntity<CategoryResponse> createCategory(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long projectId,
-            @RequestBody CategoryCreateRequest request
+            @RequestBody @Valid CategoryCreateRequest request
     ) {
         CategoryResponse response = categoryService.createCategory(userDetails.getMemberId(), projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -52,7 +53,7 @@ public class CategoryController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long projectId,
             @PathVariable Long categoryId,
-            @RequestBody CategoryUpdateRequest request
+            @RequestBody @Valid CategoryUpdateRequest request
     ) {
         categoryService.updateCategory(userDetails.getMemberId(), projectId, categoryId, request);
         return ResponseEntity.noContent().build();
