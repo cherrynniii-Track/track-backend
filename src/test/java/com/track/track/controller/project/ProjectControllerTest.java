@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.track.track.AbstractIntegrationTest;
 import com.track.track.support.AuthTestHelper;
+import com.track.track.support.ProjectTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,32 +30,12 @@ class ProjectControllerTest extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     private AuthTestHelper authTestHelper;
+    private ProjectTestHelper projectTestHelper;
 
     @BeforeEach
     void setUp() {
         authTestHelper = new AuthTestHelper(mockMvc, objectMapper);
-    }
-
-    /**
-     * 테스트용 프로젝트 생성 후 projectId 반환
-     */
-    private Long createProject(String accessToken, String name, String description) throws Exception {
-        Map<String, String> request = Map.of(
-                "name", name,
-                "description", description
-        );
-
-        String responseBody = mockMvc.perform(post("/api/projects")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        JsonNode jsonNode = objectMapper.readTree(responseBody);
-        return jsonNode.get("id").asLong();
+        projectTestHelper = new ProjectTestHelper(mockMvc, objectMapper);
     }
 
     @Test
@@ -82,8 +63,8 @@ class ProjectControllerTest extends AbstractIntegrationTest {
     void getProjects_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("project-list@test.com");
 
-        createProject(accessToken, "Track 1", "첫 번째 프로젝트");
-        createProject(accessToken, "Track 2", "두 번째 프로젝트");
+        projectTestHelper.createProject(accessToken, "Track 1", "첫 번째 프로젝트");
+        projectTestHelper.createProject(accessToken, "Track 2", "두 번째 프로젝트");
 
         mockMvc.perform(get("/api/projects")
                         .header("Authorization", "Bearer " + accessToken))
@@ -97,7 +78,7 @@ class ProjectControllerTest extends AbstractIntegrationTest {
     void getProject_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("project-get@test.com");
 
-        Long projectId = createProject(accessToken, "Track", "조회 테스트");
+        Long projectId = projectTestHelper.createProject(accessToken, "Track", "조회 테스트");
 
         mockMvc.perform(get("/api/projects/{projectId}", projectId)
                         .header("Authorization", "Bearer " + accessToken))
@@ -112,7 +93,7 @@ class ProjectControllerTest extends AbstractIntegrationTest {
     void updateProject_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("project-update@test.com");
 
-        Long projectId = createProject(accessToken, "수정 전", "수정 전 설명");
+        Long projectId = projectTestHelper.createProject(accessToken, "수정 전", "수정 전 설명");
 
         Map<String, String> request = Map.of(
                 "name", "수정 후",
@@ -131,7 +112,7 @@ class ProjectControllerTest extends AbstractIntegrationTest {
     void deleteProject_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("project-delete@test.com");
 
-        Long projectId = createProject(accessToken, "삭제할 프로젝트", "삭제 테스트");
+        Long projectId = projectTestHelper.createProject(accessToken, "삭제할 프로젝트", "삭제 테스트");
 
         mockMvc.perform(delete("/api/projects/{projectId}", projectId)
                         .header("Authorization", "Bearer " + accessToken))
