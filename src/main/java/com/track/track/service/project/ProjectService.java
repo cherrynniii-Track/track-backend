@@ -9,6 +9,7 @@ import com.track.track.exception.BusinessException;
 import com.track.track.exception.ErrorCode;
 import com.track.track.repository.MemberRepository;
 import com.track.track.repository.ProjectRepository;
+import com.track.track.service.support.ProjectSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
+    private final ProjectSupport projectSupport;
 
 
     /**
@@ -52,8 +54,8 @@ public class ProjectService {
      * @return DTO
      */
     public ProjectResponse getProject(Long memberId, Long projectId) {
-        Project project = getProjectById(projectId);
-        validateOwner(memberId, project);
+        Project project = projectSupport.getProjectById(projectId);
+        projectSupport.validateOwner(memberId, project);
         return new ProjectResponse(project);
     }
 
@@ -79,8 +81,8 @@ public class ProjectService {
     public void updateProject(Long memberId,
                               Long projectId,
                               ProjectUpdateRequest request) {
-        Project project = getProjectById(projectId);
-        validateOwner(memberId, project);
+        Project project = projectSupport.getProjectById(projectId);
+        projectSupport.validateOwner(memberId, project);
         project.update(request.getName(), request.getDescription());
     }
 
@@ -91,29 +93,8 @@ public class ProjectService {
      */
     @Transactional
     public void deleteProject(Long memberId, Long projectId) {
-        Project project = getProjectById(projectId);
-        validateOwner(memberId, project);
+        Project project = projectSupport.getProjectById(projectId);
+        projectSupport.validateOwner(memberId, project);
         projectRepository.delete(project);
-    }
-
-    /**
-     * 프로젝트 ID로 프로젝트 가져오기
-     * @param projectId 프로젝트 ID
-     * @return 프로젝트
-     */
-    private Project getProjectById(Long projectId) {
-        return projectRepository.findById(projectId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
-    }
-
-    /**
-     * 회원 검증 (프로젝트가 해당 회원의 것이 맞는지 검증)
-     * @param memberId 검증할 회원
-     * @param project 검증할 프로젝트
-     */
-    private void validateOwner(Long memberId, Project project) {
-        if (!project.getMember().getId().equals(memberId)) {
-            throw new BusinessException(ErrorCode.PROJECT_ACCESS_DENIED);
-        }
     }
 }

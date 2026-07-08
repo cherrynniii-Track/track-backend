@@ -42,4 +42,10 @@ public class Category extends BaseTimeEntity {
         this.project = project;
         this.name = name;
     }
+
+    public void update(String name) {
+        if (name != null) {
+            this.name = name;
+        }
+    }
 }
