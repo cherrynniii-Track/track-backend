@@ -4,6 +4,7 @@ import com.track.track.enums.task.TaskDifficulty;
 import com.track.track.enums.task.TaskPriority;
 import com.track.track.enums.task.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,5 +33,5 @@ public class TaskCreateRequest {
     private TaskDifficulty difficulty;
     private TaskPriority priority;
 
-    private List<Long> categoryIds = new ArrayList<>();
+    private List<@NotNull Long> categoryIds = new ArrayList<>();
 }
