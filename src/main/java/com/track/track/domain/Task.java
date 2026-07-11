@@ -1,7 +1,8 @@
 package com.track.track.domain;
 
-import com.track.track.enums.TaskDifficulty;
-import com.track.track.enums.TaskStatus;
+import com.track.track.enums.task.TaskDifficulty;
+import com.track.track.enums.task.TaskPriority;
+import com.track.track.enums.task.TaskStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -54,6 +55,10 @@ public class Task extends BaseTimeEntity {
     @Column(nullable = false)
     private TaskDifficulty difficulty;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskPriority priority;
+
     @ManyToMany(mappedBy = "tasks")
     private List<Category> categories = new ArrayList<>();
 
@@ -68,7 +73,8 @@ public class Task extends BaseTimeEntity {
             LocalDateTime finishedAt,
             LocalDateTime dueDate,
             TaskStatus status,
-            TaskDifficulty difficulty
+            TaskDifficulty difficulty,
+            TaskPriority priority
     ) {
         this.project = project;
         this.title = title;
@@ -80,5 +86,50 @@ public class Task extends BaseTimeEntity {
         this.dueDate = dueDate;
         this.status = status == null ? TaskStatus.TODO : status;
         this.difficulty = difficulty == null ? TaskDifficulty.MEDIUM : difficulty;
+        this.priority = priority == null ? TaskPriority.MEDIUM : priority;
+    }
+
+    public void update(
+            String title,
+            String goal,
+            String workProcess,
+            String lessonLearned,
+            LocalDateTime startedAt,
+            LocalDateTime finishedAt,
+            LocalDateTime dueDate,
+            TaskStatus status,
+            TaskDifficulty difficulty,
+            TaskPriority priority
+    ) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (goal != null) {
+            this.goal = goal;
+        }
+        if (workProcess != null) {
+            this.workProcess = workProcess;
+        }
+        if (lessonLearned != null) {
+            this.lessonLearned = lessonLearned;
+        }
+        if (startedAt != null) {
+            this.startedAt = startedAt;
+        }
+        if (finishedAt != null) {
+            this.finishedAt = finishedAt;
+        }
+        if (dueDate != null) {
+            this.dueDate = dueDate;
+        }
+        if (status != null) {
+            this.status = status;
+        }
+        if (difficulty != null) {
+            this.difficulty = difficulty;
+        }
+        if (priority != null) {
+            this.priority = priority;
+        }
     }
 }

@@ -1,0 +1,56 @@
+package com.track.track.support;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+public class TaskTestHelper {
+
+    private final MockMvc mockMvc;
+    private final ObjectMapper objectMapper;
+
+    public TaskTestHelper(MockMvc mockMvc, ObjectMapper objectMapper) {
+        this.mockMvc = mockMvc;
+        this.objectMapper = objectMapper;
+    }
+
+    /**
+     * 테스트용 작업 생성 후 taskId 반환
+     */
+    public Long createTask(
+            String accessToken,
+            Long projectId,
+            String title
+    ) throws Exception {
+        Map<String, Object> request = Map.of(
+                "title", title,
+                "categoryIds", List.of()
+        );
+
+        String responseBody = mockMvc.perform(
+                        post("/api/projects/{projectId}/tasks", projectId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + accessToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(request)
+                                )
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode jsonNode = objectMapper.readTree(responseBody);
+        return jsonNode.get("id").asLong();
+    }
+}
