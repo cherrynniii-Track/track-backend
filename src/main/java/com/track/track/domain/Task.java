@@ -1,8 +1,8 @@
 package com.track.track.domain;
 
-import com.track.track.enums.TaskDifficulty;
-import com.track.track.enums.TaskPriority;
-import com.track.track.enums.TaskStatus;
+import com.track.track.enums.task.TaskDifficulty;
+import com.track.track.enums.task.TaskPriority;
+import com.track.track.enums.task.TaskStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -73,7 +73,8 @@ public class Task extends BaseTimeEntity {
             LocalDateTime finishedAt,
             LocalDateTime dueDate,
             TaskStatus status,
-            TaskDifficulty difficulty
+            TaskDifficulty difficulty,
+            TaskPriority priority
     ) {
         this.project = project;
         this.title = title;
