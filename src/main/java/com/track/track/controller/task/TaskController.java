@@ -5,6 +5,7 @@ import com.track.track.dto.task.TaskResponse;
 import com.track.track.dto.task.TaskUpdateRequest;
 import com.track.track.service.auth.CustomUserDetails;
 import com.track.track.service.task.TaskService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class TaskController {
     public ResponseEntity<TaskResponse> createTask(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long projectId,
-            @RequestBody TaskCreateRequest request
+            @RequestBody @Valid TaskCreateRequest request
     ) {
         TaskResponse response = taskService.createTask(
                 userDetails.getMemberId(),
@@ -80,7 +81,7 @@ public class TaskController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long projectId,
             @PathVariable Long taskId,
-            @RequestBody TaskUpdateRequest request
+            @RequestBody @Valid TaskUpdateRequest request
     ) {
         taskService.updateTask(
                 userDetails.getMemberId(),

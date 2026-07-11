@@ -154,6 +154,7 @@ public class TaskService {
         Project project = projectSupport.getProjectById(projectId);
         projectSupport.validateOwner(memberId, project);
         Task task = getTaskByIdAndProjectId(taskId, projectId);
+        replaceCategories(task, List.of());
         taskRepository.delete(task);
     }
 
