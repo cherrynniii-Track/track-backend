@@ -1,4 +1,4 @@
-package com.track.track.enums;
+package com.track.track.enums.task;
 
 public enum TaskStatus {
     TODO,               // 시작 전

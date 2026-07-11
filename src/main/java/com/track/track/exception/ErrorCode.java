@@ -18,7 +18,10 @@ public enum ErrorCode {
     PROJECT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 프로젝트에 접근할 권한이 없습니다."),
 
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
-    CATEGORY_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 카테고리입니다.");
+    CATEGORY_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 카테고리입니다."),
+    CATEGORY_PROJECT_MISMATCH(HttpStatus.BAD_REQUEST, "해당 카테고리는 요청한 프로젝트에 속하지 않습니다."),
+
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 작업입니다.");
 
     private final HttpStatus status;
     private final String message;

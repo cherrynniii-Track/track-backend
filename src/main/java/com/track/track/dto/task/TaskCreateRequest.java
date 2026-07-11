@@ -1,8 +1,8 @@
 package com.track.track.dto.task;
 
-import com.track.track.enums.TaskDifficulty;
-import com.track.track.enums.TaskPriority;
-import com.track.track.enums.TaskStatus;
+import com.track.track.enums.task.TaskDifficulty;
+import com.track.track.enums.task.TaskPriority;
+import com.track.track.enums.task.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

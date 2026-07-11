@@ -48,4 +48,14 @@ public class Category extends BaseTimeEntity {
             this.name = name;
         }
     }
+
+    public void addTask(Task task) {
+        tasks.add(task);
+        task.getCategories().add(this);
+    }
+
+    public void removeTask(Task task) {
+        tasks.remove(task);
+        task.getCategories().remove(this);
+    }
 }

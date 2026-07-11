@@ -1,9 +1,9 @@
 package com.track.track.dto.task;
 
 import com.track.track.domain.Task;
-import com.track.track.enums.TaskDifficulty;
-import com.track.track.enums.TaskPriority;
-import com.track.track.enums.TaskStatus;
+import com.track.track.enums.task.TaskDifficulty;
+import com.track.track.enums.task.TaskPriority;
+import com.track.track.enums.task.TaskStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Builder
 public class TaskResponse {
 
     private Long id;
@@ -35,27 +34,23 @@ public class TaskResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static TaskResponse from(Task task) {
-        return TaskResponse.builder()
-                .id(task.getId())
-                .projectId(task.getProject().getId())
-                .title(task.getTitle())
-                .goal(task.getGoal())
-                .workProcess(task.getWorkProcess())
-                .lessonLearned(task.getLessonLearned())
-                .startedAt(task.getStartedAt())
-                .finishedAt(task.getFinishedAt())
-                .dueDate(task.getDueDate())
-                .status(task.getStatus())
-                .difficulty(task.getDifficulty())
-                .priority(task.getPriority())
-                .categories(
-                        task.getCategories().stream()
-                                .map(TaskCategoryResponse::from)
-                                .toList()
-                )
-                .createdAt(task.getCreatedAt())
-                .updatedAt(task.getUpdatedAt())
-                .build();
+    public TaskResponse(Task task) {
+        this.id = task.getId();
+        this.projectId = task.getProject().getId();
+        this.title = task.getTitle();
+        this.goal = task.getGoal();
+        this.workProcess = task.getWorkProcess();
+        this.lessonLearned = task.getLessonLearned();
+        this.startedAt = task.getStartedAt();
+        this.finishedAt = task.getFinishedAt();
+        this.dueDate = task.getDueDate();
+        this.status = task.getStatus();
+        this.difficulty = task.getDifficulty();
+        this.priority = task.getPriority();
+        this.categories = task.getCategories().stream()
+                .map(TaskCategoryResponse::from)
+                .toList();
+        this.createdAt = task.getCreatedAt();
+        this.updatedAt = task.getUpdatedAt();
     }
 }

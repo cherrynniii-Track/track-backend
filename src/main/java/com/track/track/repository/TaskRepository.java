@@ -1,7 +1,7 @@
 package com.track.track.repository;
 
 import com.track.track.domain.Task;
-import com.track.track.enums.TaskStatus;
+import com.track.track.enums.task.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
