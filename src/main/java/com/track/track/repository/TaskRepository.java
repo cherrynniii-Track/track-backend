@@ -28,4 +28,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             LocalDateTime start,
             LocalDateTime end
     );
+
+    // 특정 카테고리의 작업 조회
+    List<Task> findDistinctByProjectIdAndCategoriesIdOrderByDueDateAsc(
+            Long projectId,
+            Long categoryId
+    );
 }
