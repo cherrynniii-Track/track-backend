@@ -85,7 +85,7 @@ public class Task extends BaseTimeEntity {
         this.finishedAt = finishedAt;
         this.dueDate = dueDate;
         this.status = status == null ? TaskStatus.TODO : status;
-        this.difficulty = difficulty == null ? TaskDifficulty.MEDIUM : difficulty;
+        this.difficulty = difficulty == null ? TaskDifficulty.NORMAL : difficulty;
         this.priority = priority == null ? TaskPriority.MEDIUM : priority;
     }
 
