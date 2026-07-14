@@ -13,6 +13,7 @@ import com.track.track.repository.TaskRepository;
 import com.track.track.service.support.CategorySupport;
 import com.track.track.service.support.ProjectSupport;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,10 @@ public class TaskService {
      * @param request 작업 생성 요청 DTO
      * @return 생성된 작업
      */
+    @CacheEvict(
+            value = "dashboard",
+            key = "#projectId"
+    )
     @Transactional
     public TaskResponse createTask(
             Long memberId,
@@ -110,6 +115,10 @@ public class TaskService {
      * @param taskId 수정할 작업
      * @param request 작업 수정 요청 DTO
      */
+    @CacheEvict(
+            value = "dashboard",
+            key = "#projectId"
+    )
     @Transactional
     public void updateTask(
             Long memberId,
@@ -149,6 +158,10 @@ public class TaskService {
      * @param projectId 작업이 속한 프로젝트
      * @param taskId 삭제할 작업
      */
+    @CacheEvict(
+            value = "dashboard",
+            key = "#projectId"
+    )
     @Transactional
     public void deleteTask(Long memberId, Long projectId, Long taskId) {
         Project project = projectSupport.getProjectById(projectId);
