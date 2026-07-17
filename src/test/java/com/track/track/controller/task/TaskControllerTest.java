@@ -6,6 +6,7 @@ import com.track.track.enums.task.TaskDifficulty;
 import com.track.track.enums.task.TaskPriority;
 import com.track.track.enums.task.TaskStatus;
 import com.track.track.support.AuthTestHelper;
+import com.track.track.support.CategoryTestHelper;
 import com.track.track.support.ProjectTestHelper;
 import com.track.track.support.TaskTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,12 +38,14 @@ class TaskControllerTest extends AbstractIntegrationTest {
     private AuthTestHelper authTestHelper;
     private ProjectTestHelper projectTestHelper;
     private TaskTestHelper taskTestHelper;
+    private CategoryTestHelper categoryTestHelper;
 
     @BeforeEach
     void setUp() {
         authTestHelper = new AuthTestHelper(mockMvc, objectMapper);
         projectTestHelper = new ProjectTestHelper(mockMvc, objectMapper);
         taskTestHelper = new TaskTestHelper(mockMvc, objectMapper);
+        categoryTestHelper = new CategoryTestHelper(mockMvc, objectMapper);
     }
 
     @Test
@@ -695,5 +698,58 @@ class TaskControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.size").value(2))
                 .andExpect(jsonPath("$.first").value(true))
                 .andExpect(jsonPath("$.last").value(false));
+    }
+
+    @Test
+    @DisplayName("페이지네이션 조회 시 Task별 카테고리 조회 쿼리를 확인한다")
+    void getTasks_categoryNPlusOne() throws Exception {
+        String accessToken =
+                authTestHelper.signupAndLogin("task-n-plus-one@test.com");
+
+        Long projectId = projectTestHelper.createProject(
+                accessToken,
+                "Track",
+                "N+1 재현 테스트"
+        );
+
+        Long categoryId = categoryTestHelper.createCategory(
+                accessToken,
+                projectId,
+                "백엔드"
+        );
+
+        for (int i = 1; i <= 5; i++) {
+            taskTestHelper.createTask(
+                    accessToken,
+                    projectId,
+                    "작업 " + i,
+                    TaskStatus.TODO,
+                    TaskDifficulty.NORMAL,
+                    TaskPriority.MEDIUM,
+                    LocalDateTime.of(
+                            2026,
+                            7,
+                            10 + i,
+                            12,
+                            0
+                    ),
+                    List.of(categoryId)
+            );
+        }
+
+        System.out.println("===== N+1 QUERY CHECK START =====");
+
+        mockMvc.perform(get("/api/projects/{projectId}/tasks", projectId)
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .param("page", "0")
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(5))
+                .andExpect(jsonPath("$.totalElements").value(5));
+
+        System.out.println("===== N+1 QUERY CHECK END =====");
     }
 }
