@@ -3,17 +3,22 @@ package com.track.track.service.task;
 import com.track.track.domain.Category;
 import com.track.track.domain.Project;
 import com.track.track.domain.Task;
+import com.track.track.dto.common.PageResponse;
 import com.track.track.dto.task.TaskCreateRequest;
 import com.track.track.dto.task.TaskResponse;
+import com.track.track.dto.task.TaskSearchCondition;
 import com.track.track.dto.task.TaskUpdateRequest;
 import com.track.track.exception.BusinessException;
 import com.track.track.exception.ErrorCode;
-import com.track.track.repository.CategoryRepository;
 import com.track.track.repository.TaskRepository;
 import com.track.track.service.support.CategorySupport;
 import com.track.track.service.support.ProjectSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +33,8 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final CategorySupport categorySupport;
     private final ProjectSupport projectSupport;
+
+    private static final int MAX_PAGE_SIZE = 100;
 
     /**
      * 작업 생성
@@ -80,6 +87,48 @@ public class TaskService {
 
     /**
      * 프로젝트의 작업 목록 조회 (마감일 오름차순)
+     * @param memberId 조회하는 회원
+     * @param projectId 작업이 속한 프로젝트
+     * @param condition 검색 조건
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 작업 목록
+     */
+    public PageResponse<TaskResponse> getTasks(
+            Long memberId,
+            Long projectId,
+            TaskSearchCondition condition,
+            int page,
+            int size
+    ) {
+        Project project = projectSupport.getProjectById(projectId);
+        projectSupport.validateOwner(memberId, project);
+
+        validatePageRequest(page, size);
+        validateSearchCondition(condition);
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.ASC, "dueDate")
+        );
+
+        Page<TaskResponse> taskPage = taskRepository.findTasks(
+                projectId,
+                condition.getStatus(),
+                condition.getDifficulty(),
+                condition.getPriority(),
+                condition.getCategoryId(),
+                condition.getDueDateFrom(),
+                condition.getDueDateTo(),
+                pageable
+        ).map(TaskResponse::new);
+
+        return new PageResponse<>(taskPage);
+    }
+
+    /**
+     * 프로젝트의 작업 목록 전체 조회 (마감일 오름차순)
      * @param memberId 조회하는 회원
      * @param projectId 작업이 속한 프로젝트
      * @return 작업 목록
@@ -226,5 +275,32 @@ public class TaskService {
         List<Category> currentCategories = new ArrayList<>(task.getCategories());
         currentCategories.forEach(category -> category.removeTask(task));
         newCategories.forEach(category -> category.addTask(task));
+    }
+
+    /**
+     * 페이지 검증
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     */
+    private void validatePageRequest(int page, int size) {
+        if (page < 0) {
+            throw new BusinessException(ErrorCode.INVALID_PAGE_NUMBER);
+        }
+
+        if (size < 1 || size > MAX_PAGE_SIZE) {
+            throw new BusinessException(ErrorCode.INVALID_PAGE_SIZE);
+        }
+    }
+
+    /**
+     * 마감일 검증
+     * @param condition 검색 조건
+     */
+    private void validateSearchCondition(TaskSearchCondition condition) {
+        if (condition.getDueDateFrom() != null
+                && condition.getDueDateTo() != null
+                && condition.getDueDateFrom().isAfter(condition.getDueDateTo())) {
+            throw new BusinessException(ErrorCode.INVALID_DUE_DATE_RANGE);
+        }
     }
 }

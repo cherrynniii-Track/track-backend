@@ -1,7 +1,9 @@
 package com.track.track.controller.task;
 
+import com.track.track.dto.common.PageResponse;
 import com.track.track.dto.task.TaskCreateRequest;
 import com.track.track.dto.task.TaskResponse;
+import com.track.track.dto.task.TaskSearchCondition;
 import com.track.track.dto.task.TaskUpdateRequest;
 import com.track.track.service.auth.CustomUserDetails;
 import com.track.track.service.task.TaskService;
@@ -37,6 +39,25 @@ public class TaskController {
     }
 
     @GetMapping
+    public ResponseEntity<PageResponse<TaskResponse>> getTasks(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long projectId,
+            @ModelAttribute TaskSearchCondition condition,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        PageResponse<TaskResponse> response = taskService.getTasks(
+                userDetails.getMemberId(),
+                projectId,
+                condition,
+                page,
+                size
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<List<TaskResponse>> getTasks(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long projectId
@@ -57,21 +78,6 @@ public class TaskController {
                         userDetails.getMemberId(),
                         projectId,
                         taskId
-                )
-        );
-    }
-
-    @GetMapping("/categories/{categoryId}")
-    public ResponseEntity<List<TaskResponse>> getTasksByCategory(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long projectId,
-            @PathVariable Long categoryId
-    ) {
-        return ResponseEntity.ok(
-                taskService.getTasksByCategory(
-                        userDetails.getMemberId(),
-                        projectId,
-                        categoryId
                 )
         );
     }
