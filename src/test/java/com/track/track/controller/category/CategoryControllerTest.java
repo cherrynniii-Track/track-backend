@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.track.track.AbstractIntegrationTest;
 import com.track.track.support.AuthTestHelper;
+import com.track.track.support.CategoryTestHelper;
 import com.track.track.support.ProjectTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,32 +31,13 @@ class CategoryControllerTest extends AbstractIntegrationTest {
 
     private AuthTestHelper authTestHelper;
     private ProjectTestHelper projectTestHelper;
+    private CategoryTestHelper categoryTestHelper;
 
     @BeforeEach
     void setUp() {
         authTestHelper = new AuthTestHelper(mockMvc, objectMapper);
         projectTestHelper = new ProjectTestHelper(mockMvc, objectMapper);
-    }
-
-    /**
-     * 테스트용 카테고리 생성 후 categoryId 반환
-     */
-    private Long createCategory(String accessToken, Long projectId, String name) throws Exception {
-        Map<String, String> request = Map.of(
-                "name", name
-        );
-
-        String responseBody = mockMvc.perform(post("/api/projects/{projectId}/categories", projectId)
-                        .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        JsonNode jsonNode = objectMapper.readTree(responseBody);
-        return jsonNode.get("id").asLong();
+        categoryTestHelper = new CategoryTestHelper(mockMvc, objectMapper);
     }
 
     @Test
@@ -83,8 +65,8 @@ class CategoryControllerTest extends AbstractIntegrationTest {
         String accessToken = authTestHelper.signupAndLogin("category-list@test.com");
         Long projectId = projectTestHelper.createProject(accessToken, "Track", "개인 작업 트래커");
 
-        createCategory(accessToken, projectId, "백엔드");
-        createCategory(accessToken, projectId, "프론트엔드");
+        categoryTestHelper.createCategory(accessToken, projectId, "백엔드");
+        categoryTestHelper.createCategory(accessToken, projectId, "프론트엔드");
 
         mockMvc.perform(get("/api/projects/{projectId}/categories", projectId)
                         .header("Authorization", "Bearer " + accessToken))
@@ -98,7 +80,7 @@ class CategoryControllerTest extends AbstractIntegrationTest {
     void getCategory_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("category-get@test.com");
         Long projectId = projectTestHelper.createProject(accessToken, "Track", "개인 작업 트래커");
-        Long categoryId = createCategory(accessToken, projectId, "백엔드");
+        Long categoryId = categoryTestHelper.createCategory(accessToken, projectId, "백엔드");
 
         mockMvc.perform(get("/api/projects/{projectId}/categories/{categoryId}", projectId, categoryId)
                         .header("Authorization", "Bearer " + accessToken))
@@ -112,7 +94,7 @@ class CategoryControllerTest extends AbstractIntegrationTest {
     void updateCategory_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("category-update@test.com");
         Long projectId = projectTestHelper.createProject(accessToken, "Track", "개인 작업 트래커");
-        Long categoryId = createCategory(accessToken, projectId, "백엔드");
+        Long categoryId = categoryTestHelper.createCategory(accessToken, projectId, "백엔드");
 
         Map<String, String> request = Map.of(
                 "name", "DB"
@@ -130,7 +112,7 @@ class CategoryControllerTest extends AbstractIntegrationTest {
     void deleteCategory_success() throws Exception {
         String accessToken = authTestHelper.signupAndLogin("category-delete@test.com");
         Long projectId = projectTestHelper.createProject(accessToken, "Track", "개인 작업 트래커");
-        Long categoryId = createCategory(accessToken, projectId, "백엔드");
+        Long categoryId = categoryTestHelper.createCategory(accessToken, projectId, "백엔드");
 
         mockMvc.perform(delete("/api/projects/{projectId}/categories/{categoryId}", projectId, categoryId)
                         .header("Authorization", "Bearer " + accessToken))
