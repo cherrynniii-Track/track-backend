@@ -110,7 +110,10 @@ public class TaskService {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.ASC, "dueDate")
+                Sort.by(
+                        Sort.Order.asc("dueDate"),
+                        Sort.Order.asc("id")
+                )
         );
 
         Page<TaskResponse> taskPage = taskRepository.findTasks(
