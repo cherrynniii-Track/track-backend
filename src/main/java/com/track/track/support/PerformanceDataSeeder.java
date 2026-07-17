@@ -122,7 +122,7 @@ public class PerformanceDataSeeder implements CommandLineRunner {
      * @return 생성되었거나 기존에 존재하는 프로젝트
      */
     private Project createProject(Member member, String name) {
-        return projectRepository.findByMemberIdAndName(member.getId(), name)
+        return projectRepository.findFirstByMemberIdAndNameOrderByIdAsc(member.getId(), name)
                 .orElseGet(() -> {
                     Project project = Project.builder()
                             .member(member)

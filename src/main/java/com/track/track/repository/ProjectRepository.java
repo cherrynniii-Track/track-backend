@@ -11,5 +11,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByMemberId(Long memberId);
     
     // 회원 ID와 프로젝트 이름으로 프로젝트 찾기
-    Optional<Project> findByMemberIdAndName(Long memberId, String name);
+    Optional<Project> findFirstByMemberIdAndNameOrderByIdAsc(Long memberId, String name);
 }
