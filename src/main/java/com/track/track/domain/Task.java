@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class Task extends BaseTimeEntity {
     @Column(nullable = false)
     private TaskPriority priority;
 
+    @BatchSize(size = 100)      // 최대 페이지 크기가 100이므로 100으로 설정
     @ManyToMany(mappedBy = "tasks")
     private List<Category> categories = new ArrayList<>();
 
