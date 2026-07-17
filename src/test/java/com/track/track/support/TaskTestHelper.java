@@ -2,9 +2,15 @@ package com.track.track.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.track.track.enums.task.TaskDifficulty;
+import com.track.track.enums.task.TaskPriority;
+import com.track.track.enums.task.TaskStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,5 +58,38 @@ public class TaskTestHelper {
 
         JsonNode jsonNode = objectMapper.readTree(responseBody);
         return jsonNode.get("id").asLong();
+    }
+
+    public Long createTask(
+            String accessToken,
+            Long projectId,
+            String title,
+            TaskStatus status,
+            TaskDifficulty difficulty,
+            TaskPriority priority,
+            LocalDateTime dueDate,
+            List<Long> categoryIds
+    ) throws Exception {
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("title", title);
+        request.put("status", status);
+        request.put("difficulty", difficulty);
+        request.put("priority", priority);
+        request.put("dueDate", dueDate);
+        request.put("categoryIds", categoryIds);
+
+        MvcResult result = mockMvc.perform(
+                        post("/api/projects/{projectId}/tasks", projectId)
+                                .header("Authorization", "Bearer " + accessToken)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return objectMapper.readTree(
+                result.getResponse().getContentAsString()
+        ).get("id").asLong();
     }
 }
