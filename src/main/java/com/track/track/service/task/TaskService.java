@@ -221,39 +221,6 @@ public class TaskService {
     }
 
     /**
-     * 특정 프로젝트의 특정 카테고리에 속한 작업 목록 조회
-     * @param memberId 조회하는 회원
-     * @param projectId 작업이 속한 프로젝트
-     * @param categoryId 조회할 카테고리
-     * @return 해당 카테고리에 속한 작업 목록
-     */
-    /**
-     * 특정 프로젝트의 특정 카테고리에 속한 작업 목록 조회
-     */
-    public List<TaskResponse> getTasksByCategory(
-            Long memberId,
-            Long projectId,
-            Long categoryId
-    ) {
-        Project project = projectSupport.getProjectById(projectId);
-        projectSupport.validateOwner(memberId, project);
-
-        categorySupport.getValidatedCategoriesInProject(
-                projectId,
-                List.of(categoryId)
-        );
-
-        return taskRepository
-                .findDistinctByProjectIdAndCategoriesIdOrderByDueDateAsc(
-                        projectId,
-                        categoryId
-                )
-                .stream()
-                .map(TaskResponse::new)
-                .toList();
-    }
-
-    /**
      * 특정 프로젝트에 속한 작업 조회
      */
     private Task getTaskByIdAndProjectId(Long taskId, Long projectId) {
