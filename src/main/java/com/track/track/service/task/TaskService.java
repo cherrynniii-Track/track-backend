@@ -116,16 +116,32 @@ public class TaskService {
                 )
         );
 
-        Page<TaskResponse> taskPage = taskRepository.findTasks(
-                projectId,
-                condition.getStatus(),
-                condition.getDifficulty(),
-                condition.getPriority(),
-                condition.getCategoryId(),
-                condition.getDueDateFrom(),
-                condition.getDueDateTo(),
-                pageable
-        ).map(TaskResponse::new);
+        Page<Task> tasks;
+
+        if (condition.getCategoryId() == null) {
+            tasks = taskRepository.findTasks(
+                    projectId,
+                    condition.getStatus(),
+                    condition.getDifficulty(),
+                    condition.getPriority(),
+                    condition.getDueDateFrom(),
+                    condition.getDueDateTo(),
+                    pageable
+            );
+        } else {
+            tasks = taskRepository.findTasksByCategory(
+                    projectId,
+                    condition.getCategoryId(),
+                    condition.getStatus(),
+                    condition.getDifficulty(),
+                    condition.getPriority(),
+                    condition.getDueDateFrom(),
+                    condition.getDueDateTo(),
+                    pageable
+            );
+        }
+
+        Page<TaskResponse> taskPage = tasks.map(TaskResponse::new);
 
         return new PageResponse<>(taskPage);
     }

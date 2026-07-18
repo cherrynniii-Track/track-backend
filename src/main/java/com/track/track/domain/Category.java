@@ -33,7 +33,11 @@ public class Category extends BaseTimeEntity {
     @JoinTable(
             name = "category_task",
             joinColumns = @JoinColumn(name = "category_id"),
-            inverseJoinColumns = @JoinColumn(name = "task_id")
+            inverseJoinColumns = @JoinColumn(name = "task_id"),
+            uniqueConstraints = @UniqueConstraint(
+            name = "uk_category_task_category_id_task_id",
+            columnNames = {"category_id", "task_id"}
+    )
     )
     private List<Task> tasks = new ArrayList<>();
 
