@@ -18,6 +18,19 @@ import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
+@Table(
+        name = "task",
+        indexes = {
+                @Index(
+                        name = "idx_task_project_due_task",
+                        columnList = "project_id, due_date, task_id"
+                ),
+                @Index(
+                        name = "idx_task_project_status_difficulty_due_task",
+                        columnList = "project_id, status, difficulty, due_date, task_id"
+                )
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Task extends BaseTimeEntity {
