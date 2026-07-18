@@ -73,36 +73,68 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query(
             value = """
-                select distinct t
-                from Task t
-                left join t.categories c
-                where t.project.id = :projectId
-                  and (:status is null or t.status = :status)
-                  and (:difficulty is null or t.difficulty = :difficulty)
-                  and (:priority is null or t.priority = :priority)
-                  and (:categoryId is null or c.id = :categoryId)
-                  and (:dueDateFrom is null or t.dueDate >= :dueDateFrom)
-                  and (:dueDateTo is null or t.dueDate <= :dueDateTo)
-                """,
+            select t
+            from Task t
+            where t.project.id = :projectId
+              and (:status is null or t.status = :status)
+              and (:difficulty is null or t.difficulty = :difficulty)
+              and (:priority is null or t.priority = :priority)
+              and (:dueDateFrom is null or t.dueDate >= :dueDateFrom)
+              and (:dueDateTo is null or t.dueDate <= :dueDateTo)
+            """,
             countQuery = """
-                select count(distinct t)
-                from Task t
-                left join t.categories c
-                where t.project.id = :projectId
-                  and (:status is null or t.status = :status)
-                  and (:difficulty is null or t.difficulty = :difficulty)
-                  and (:priority is null or t.priority = :priority)
-                  and (:categoryId is null or c.id = :categoryId)
-                  and (:dueDateFrom is null or t.dueDate >= :dueDateFrom)
-                  and (:dueDateTo is null or t.dueDate <= :dueDateTo)
-                """
+            select count(t)
+            from Task t
+            where t.project.id = :projectId
+              and (:status is null or t.status = :status)
+              and (:difficulty is null or t.difficulty = :difficulty)
+              and (:priority is null or t.priority = :priority)
+              and (:dueDateFrom is null or t.dueDate >= :dueDateFrom)
+              and (:dueDateTo is null or t.dueDate <= :dueDateTo)
+            """
     )
     Page<Task> findTasks(
             @Param("projectId") Long projectId,
             @Param("status") TaskStatus status,
             @Param("difficulty") TaskDifficulty difficulty,
             @Param("priority") TaskPriority priority,
+            @Param("dueDateFrom") LocalDateTime dueDateFrom,
+            @Param("dueDateTo") LocalDateTime dueDateTo,
+            Pageable pageable
+    );
+
+    @Query(
+            value = """
+            select t
+            from Task t
+            join t.categories category
+            where t.project.id = :projectId
+              and category.id = :categoryId
+              and (:status is null or t.status = :status)
+              and (:difficulty is null or t.difficulty = :difficulty)
+              and (:priority is null or t.priority = :priority)
+              and (:dueDateFrom is null or t.dueDate >= :dueDateFrom)
+              and (:dueDateTo is null or t.dueDate <= :dueDateTo)
+            """,
+            countQuery = """
+            select count(t)
+            from Task t
+            join t.categories category
+            where t.project.id = :projectId
+              and category.id = :categoryId
+              and (:status is null or t.status = :status)
+              and (:difficulty is null or t.difficulty = :difficulty)
+              and (:priority is null or t.priority = :priority)
+              and (:dueDateFrom is null or t.dueDate >= :dueDateFrom)
+              and (:dueDateTo is null or t.dueDate <= :dueDateTo)
+            """
+    )
+    Page<Task> findTasksByCategory(
+            @Param("projectId") Long projectId,
             @Param("categoryId") Long categoryId,
+            @Param("status") TaskStatus status,
+            @Param("difficulty") TaskDifficulty difficulty,
+            @Param("priority") TaskPriority priority,
             @Param("dueDateFrom") LocalDateTime dueDateFrom,
             @Param("dueDateTo") LocalDateTime dueDateTo,
             Pageable pageable
