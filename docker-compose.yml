@@ -21,5 +21,17 @@ services:
       - "6379:6379"
     restart: unless-stopped
 
+  app:
+    build: .
+    container_name: track-app
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+
 volumes:
   mysql-data:
