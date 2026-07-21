@@ -54,6 +54,11 @@ docker compose logs --tail 50 app
 Started TrackApplication
 ```
 
+수동 헬스체크 방법은 다음과 같다.
+```bash
+curl -i http://localhost:8080/actuator/health
+```
+
 ### 4. 컨테이너 종료
 
 ```bash
