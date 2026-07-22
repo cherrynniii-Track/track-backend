@@ -31,6 +31,7 @@ services:
     restart: unless-stopped
 
   app:
+    image: ghcr.io/cherrynniii-track/track-backend:latest
     build: .
     container_name: track-app
     restart: unless-stopped
