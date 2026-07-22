@@ -69,17 +69,25 @@ jobs:
             docker compose pull app
             docker compose up -d --no-build app
 
+            health_check_succeeded=false
+
             for i in $(seq 1 24); do
               if curl -fsS http://localhost:8080/actuator/health; then
+                echo ""
                 echo "Health check succeeded"
-                exit 0
+                health_check_succeeded=true
+                break
               fi
 
               echo "Waiting for application... ($i/24)"
               sleep 5
             done
 
-            echo "Health check failed"
-            docker compose logs --tail 100 app
-            exit 1
+            if [ "$health_check_succeeded" != "true" ]; then
+              echo "Health check failed"
+              docker compose logs --tail 100 app
+              exit 1
+            fi
+
+            echo "Deployment succeeded"
           EOF
