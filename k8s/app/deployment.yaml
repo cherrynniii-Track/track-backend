@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: track-app
+  namespace: track
+
+spec:
+  replicas: 1     # Spring Boot Pod을 하나로 유지
+
+  selector:
+    matchLabels:
+      app: track-app    # Deployment가 자신이 관리할 Pod를 app: track-app 라벨로 찾음
+
+  template:
+    metadata:
+      labels:
+        app: track-app
+
+    spec:
+      containers:
+        - name: track-app
+          image: ghcr.io/cherrynniii-track/track-backend:latest   # GHCR에 저장된 도커 이미지 실행
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          envFrom:
+            - secretRef:
+                name: track-app-secret
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://host.docker.internal:3307/track"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "host.docker.internal"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
