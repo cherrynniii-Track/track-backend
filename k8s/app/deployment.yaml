@@ -33,8 +33,13 @@ spec:
                 name: track-app-secret
 
           env:
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: database-name
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://mysql-service:3306/track"
+              value: "jdbc:mysql://mysql-service:3306/$(DATABASE_NAME)"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
