@@ -34,8 +34,18 @@ spec:
 
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://host.docker.internal:3307/track"
+              value: "jdbc:mysql://mysql-service:3306/track"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: database-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: database-password
             - name: SPRING_DATA_REDIS_HOST
-              value: "host.docker.internal"
+              value: "redis-service"
             - name: SPRING_DATA_REDIS_PORT
               value: "6379"

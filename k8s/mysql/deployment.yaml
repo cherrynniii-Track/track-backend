@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: mysql
+  namespace: track
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mysql
+
+  template:
+    metadata:
+      labels:
+        app: mysql
+
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+
+          ports:
+            - containerPort: 3306
+
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: database-name
+
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: database-username
+
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: database-password
+
+            - name: MYSQL_ROOT_PASSWORD
+              value: root-password
