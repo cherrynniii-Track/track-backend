@@ -48,7 +48,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: track-app-secret
-                  key: JWT_SECRET
+                  key: MYSQL_ROOT_PASSWORD
 
           volumeMounts:
             - name: mysql-data
