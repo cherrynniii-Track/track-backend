@@ -28,28 +28,29 @@ spec:
               containerPort: 8080
               protocol: TCP
 
-          envFrom:
-            - secretRef:
-                name: track-app-secret
-
           env:
             - name: DATABASE_NAME
               valueFrom:
                 secretKeyRef:
                   name: track-app-secret
-                  key: database-name
+                  key: DATABASE_NAME
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: DATABASE_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: DATABASE_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: JWT_SECRET
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:mysql://mysql-service:3306/$(DATABASE_NAME)"
-            - name: SPRING_DATASOURCE_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: track-app-secret
-                  key: database-username
-            - name: SPRING_DATASOURCE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: track-app-secret
-                  key: database-password
             - name: SPRING_DATA_REDIS_HOST
               value: "redis-service"
             - name: SPRING_DATA_REDIS_PORT

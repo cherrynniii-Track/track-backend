@@ -33,22 +33,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: track-app-secret
-                  key: database-name
+                  key: DATABASE_NAME
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
                   name: track-app-secret
-                  key: database-username
+                  key: DATABASE_USERNAME
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: track-app-secret
-                  key: database-password
+                  key: DATABASE_PASSWORD
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: track-app-secret
-                  key: mysql-root-password
+                  key: JWT_SECRET
 
           volumeMounts:
             - name: mysql-data
