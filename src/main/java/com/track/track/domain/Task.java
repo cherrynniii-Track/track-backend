@@ -28,6 +28,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
                 @Index(
                         name = "idx_task_project_status_difficulty_due_task",
                         columnList = "project_id, status, difficulty, due_date, task_id"
+                ),
+                @Index(
+                        name = "idx_task_due_date_status",
+                        columnList = "due_date, status"
                 )
         }
 )
