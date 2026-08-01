@@ -77,6 +77,13 @@ public class Task extends BaseTimeEntity {
     @ManyToMany(mappedBy = "tasks")
     private List<Category> categories = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "task",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private List<TaskNotificationHistory> notificationHistories = new ArrayList<>();
+
     @Builder
     public Task(
             Project project,
