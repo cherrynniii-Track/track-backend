@@ -139,4 +139,26 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("dueDateTo") LocalDateTime dueDateTo,
             Pageable pageable
     );
+
+    /**
+     * 마감 임박 작업 찾가
+     * @param now 현재 시간
+     * @param notificationEnd 알림을 보낼 대상의 조회 종료 시간
+     * @param excludedStatuses 알림을 보내지 않을 작업 상태
+     * @return
+     */
+    @Query("""
+        select t
+        from Task t
+        join fetch t.project p
+        join fetch p.member m
+        where t.dueDate > :now
+          and t.dueDate <= :notificationEnd
+          and t.status not in :excludedStatuses
+        """)
+    List<Task> findTasksDueSoon(
+            @Param("now") LocalDateTime now,
+            @Param("notificationEnd") LocalDateTime notificationEnd,
+            @Param("excludedStatuses") List<TaskStatus> excludedStatuses
+    );
 }
