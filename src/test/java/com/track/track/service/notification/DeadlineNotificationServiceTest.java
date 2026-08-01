@@ -4,6 +4,7 @@ import com.track.track.domain.Member;
 import com.track.track.domain.Project;
 import com.track.track.domain.Task;
 import com.track.track.domain.TaskNotificationHistory;
+import com.track.track.enums.NotificationStatus;
 import com.track.track.enums.task.TaskStatus;
 import com.track.track.repository.TaskNotificationHistoryRepository;
 import com.track.track.repository.TaskRepository;
@@ -21,6 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -102,8 +104,8 @@ class DeadlineNotificationServiceTest {
         )).thenReturn(List.of(task));
 
         when(notificationHistoryRepository
-                .existsByTaskIdAndDueDate(1L, dueDate))
-                .thenReturn(false);
+                .findByTaskIdAndDueDate(1L, dueDate))
+                .thenReturn(Optional.empty());
 
         when(notificationHistoryRepository.saveAndFlush(any()))
                 .thenReturn(history);
@@ -139,9 +141,14 @@ class DeadlineNotificationServiceTest {
                 anyList()
         )).thenReturn(List.of(task));
 
+        TaskNotificationHistory history = mock(TaskNotificationHistory.class);
+
         when(notificationHistoryRepository
-                .existsByTaskIdAndDueDate(1L, dueDate))
-                .thenReturn(true);
+                .findByTaskIdAndDueDate(1L, dueDate))
+                .thenReturn(Optional.of(history));
+
+        when(history.getStatus())
+                .thenReturn(NotificationStatus.SENT);
 
         deadlineNotificationService
                 .sendUpcomingDeadlineNotifications();
