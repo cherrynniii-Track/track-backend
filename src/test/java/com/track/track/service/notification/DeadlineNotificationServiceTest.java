@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
@@ -57,21 +56,14 @@ class DeadlineNotificationServiceTest {
                 24L
         );
 
-        lenient().when(transactionTemplate.execute(any()))
-                .thenAnswer(invocation -> {
-                    TransactionCallback<?> callback =
-                            invocation.getArgument(0);
-
-                    return callback.doInTransaction(transactionStatus);
-                });
-
-        lenient().doAnswer(invocation -> {
+        doAnswer(invocation -> {
             Consumer<TransactionStatus> callback =
                     invocation.getArgument(0);
 
             callback.accept(transactionStatus);
             return null;
-        }).when(transactionTemplate).executeWithoutResult(any());
+        }).when(transactionTemplate)
+                .executeWithoutResult(any());
     }
 
     @Test
