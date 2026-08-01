@@ -155,6 +155,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
         where t.dueDate > :now
           and t.dueDate <= :notificationEnd
           and t.status not in :excludedStatuses
+          and m.email <> 'performance@test.com'
         """)
     List<Task> findTasksDueSoon(
             @Param("now") LocalDateTime now,
