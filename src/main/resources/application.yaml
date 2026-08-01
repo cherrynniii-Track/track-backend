@@ -21,8 +21,27 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT:6379}
       connect-timeout: 2s
       timeout: 2s
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
 jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: 3600000
   refresh-token-expiration: 1209600000
+
+notification:
+  deadline:
+    cron: "0 */10 * * * *"  # 10분마다 실행
+    hours-before: 24        # 현재부터 24시간 이내 마감 Task 조회

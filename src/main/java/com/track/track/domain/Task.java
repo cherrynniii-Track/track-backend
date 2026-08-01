@@ -28,6 +28,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
                 @Index(
                         name = "idx_task_project_status_difficulty_due_task",
                         columnList = "project_id, status, difficulty, due_date, task_id"
+                ),
+                @Index(
+                        name = "idx_task_due_date_status",
+                        columnList = "due_date, status"
                 )
         }
 )
@@ -76,6 +80,13 @@ public class Task extends BaseTimeEntity {
     @BatchSize(size = 100)      // 최대 페이지 크기가 100이므로 100으로 설정
     @ManyToMany(mappedBy = "tasks")
     private List<Category> categories = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "task",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private List<TaskNotificationHistory> notificationHistories = new ArrayList<>();
 
     @Builder
     public Task(

@@ -24,7 +24,9 @@ public enum ErrorCode {
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 작업입니다."),
     INVALID_PAGE_NUMBER(HttpStatus.BAD_REQUEST, "페이지 번호는 0 이상이어야 합니다."),
     INVALID_PAGE_SIZE(HttpStatus.BAD_REQUEST, "페이지 크기는 1 이상 100 이하여야 합니다."),
-    INVALID_DUE_DATE_RANGE(HttpStatus.BAD_REQUEST, "마감일 시작 날짜는 종료 날짜보다 늦을 수 없습니다.");
+    INVALID_DUE_DATE_RANGE(HttpStatus.BAD_REQUEST, "마감일 시작 날짜는 종료 날짜보다 늦을 수 없습니다."),
+
+    MAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다.");
 
     private final HttpStatus status;
     private final String message;

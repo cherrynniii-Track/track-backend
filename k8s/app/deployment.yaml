@@ -55,3 +55,13 @@ spec:
               value: "redis-service"
             - name: SPRING_DATA_REDIS_PORT
               value: "6379"
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: MAIL_USERNAME
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: track-app-secret
+                  key: MAIL_PASSWORD

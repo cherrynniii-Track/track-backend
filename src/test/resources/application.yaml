@@ -2,3 +2,8 @@ jwt:
   secret: test-secret-key-test-secret-key-test-secret-key
   access-token-expiration: 3600000
   refresh-token-expiration: 1209600000
+
+notification:
+  deadline:
+    cron: "0 */10 * * * *"  # 10분마다 실행
+    hours-before: 24        # 현재부터 24시간 이내 마감 Task 조회

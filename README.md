@@ -22,6 +22,9 @@ SPRING_DATA_REDIS_HOST=redis
 SPRING_DATA_REDIS_PORT=6379
 
 JWT_SECRET=YOUR_SUFFICIENTLY_LONG_JWT_SECRET
+
+MAIL_USERNAME=email
+MAIL_PASSWORD=email_app_password
 ```
 
 `.env`와 `.env.docker`에는 민감한 정보가 포함되므로 Git에 커밋하지 않는다.
