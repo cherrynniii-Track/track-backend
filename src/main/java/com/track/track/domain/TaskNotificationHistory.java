@@ -70,4 +70,9 @@ public class TaskNotificationHistory extends BaseTimeEntity {
     public void markAsFailed() {
         this.status = NotificationStatus.FAILED;
     }
+
+    public void markAsPending() {
+        this.status = NotificationStatus.PENDING;
+        this.sentAt = null;
+    }
 }

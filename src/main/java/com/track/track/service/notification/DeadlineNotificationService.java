@@ -2,6 +2,7 @@ package com.track.track.service.notification;
 
 import com.track.track.domain.Task;
 import com.track.track.domain.TaskNotificationHistory;
+import com.track.track.enums.NotificationStatus;
 import com.track.track.enums.task.TaskStatus;
 import com.track.track.exception.BusinessException;
 import com.track.track.repository.TaskNotificationHistoryRepository;
@@ -50,11 +51,6 @@ public class DeadlineNotificationService {
     private void sendNotification(Task task) {
         LocalDateTime dueDate = task.getDueDate();
 
-        // 이미 같은 마감일을 기준으로 처리한 이력이 있으면 제외
-        if (notificationHistoryRepository.existsByTaskIdAndDueDate(task.getId(), dueDate)) {
-            return;
-        }
-
         String recipientEmail = task.getProject()
                 .getMember()
                 .getEmail();
@@ -63,11 +59,27 @@ public class DeadlineNotificationService {
 
         try {
             history = transactionTemplate.execute(status -> {
+                TaskNotificationHistory existingHistory =
+                        notificationHistoryRepository
+                                .findByTaskIdAndDueDate(task.getId(), dueDate)
+                                .orElse(null);
+
+                if (existingHistory != null) {
+                    // FAILED 상태일 때만 다시 전송
+                    if (existingHistory.getStatus() != NotificationStatus.FAILED) {
+                        return null;
+                    }
+
+                    existingHistory.markAsPending();
+                    return existingHistory;
+                }
+
                 TaskNotificationHistory pendingHistory =
                         TaskNotificationHistory.builder()
                                 .task(task)
                                 .dueDate(dueDate)
                                 .recipientEmail(recipientEmail)
+                                .status(NotificationStatus.PENDING)
                                 .build();
 
                 return notificationHistoryRepository.saveAndFlush(pendingHistory);
