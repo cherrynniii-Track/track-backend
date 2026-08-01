@@ -7,10 +7,15 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public abstract class AbstractIntegrationTest {
+
+    @MockitoBean
+    protected JavaMailSender javaMailSender;
 
     static final MySQLContainer<?> mysql =
             new MySQLContainer<>("mysql:8.0")
