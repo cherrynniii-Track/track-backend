@@ -24,3 +24,6 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
