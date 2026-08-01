@@ -9,6 +9,8 @@ MYSQL_DATABASE=track
 MYSQL_USER=YOUR_DB_USERNAME
 MYSQL_PASSWORD=YOUR_DB_PASSWORD
 MYSQL_ROOT_PASSWORD=YOUR_ROOT_PASSWORD
+MAIL_USERNAME=email
+MAIL_PASSWORD=email_app_password
 ```
 
 프로젝트 루트에 `.env.docker` 파일을 생성하고 애플리케이션의 접속 정보를 설정한다.
