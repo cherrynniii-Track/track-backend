@@ -22,7 +22,6 @@ services:
       retries: 10
       start_period: 30s
 
-
   redis:
     image: redis:7-alpine
     container_name: track-redis
@@ -37,6 +36,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env.docker
+    environment:
+      # Spring Boot가 Kafka 찾게
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     ports:
       - "8080:8080"
     depends_on:
@@ -44,6 +46,39 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      kafka:
+        condition: service_started
+
+  kafka:
+    image: apache/kafka:4.3.1
+    container_name: track-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # Kafka 서버 번호
+      KAFKA_NODE_ID: 1
+      # 단일 노드에서 broker(실제 데이터 저장)와 controller(카프카 서버들끼리 관리)를 함께 실행
+      KAFKA_PROCESS_ROLES: broker,controller
+      # 접속 경로 (9092: 인텔리제이에서 스프링부트가 쓰는 포트, 29092: 도커 안에서 쓰는 포트, 9093: 컨트롤러끼리 쓰는 포트)
+      KAFKA_LISTENERS: CONTROLLER://:9093,EXTERNAL://:9092,INTERNAL://:29092
+      # Kafka가 클라이언트에게 알려주는 실제 접속 주소
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      # Kafka 브로커 내부 통신
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      # KRaft Controller 설정
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      # 브로커가 하나뿐이므로 복제 개수도 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # 개발 환경에서는 자동 Topic 자동 생성을 꺼두는 편이 명확함
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+    volumes:
+      - kafka-data:/var/lib/kafka/data
 
 volumes:
   mysql-data:
+  kafka-data:
