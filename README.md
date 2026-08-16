@@ -13,6 +13,8 @@
 - 알림 발송 이력 관리, 중복 방지 및 실패 재시도
 - Swagger UI/OpenAPI 문서와 Actuator 헬스체크
 
+<br>
+
 ## 기술 스택
 
 | 구분 | 기술 |
@@ -30,6 +32,8 @@
 | CI/CD | GitHub Actions, GitHub Container Registry, AWS EC2 |
 | Orchestration manifests | Kubernetes |
 
+<br>
+
 ## 애플리케이션 구조
 
 ```text
@@ -44,9 +48,11 @@ Client
 
 핵심 도메인은 `Member → Project → Task` 구조이며, `Category`와 `Task`는 다대다 관계다. 모든 프로젝트·카테고리·작업 API는 인증된 회원이 해당 프로젝트의 소유자인지 검증한다.
 
+<br>
+
 ## Docker 실행 방법
 
-### 1. Docker 환경변수 설정
+### 1. 환경변수 설정
 
 프로젝트 루트에 `.env` 파일을 생성하고 MySQL 컨테이너 초기화 정보를 설정한다.
 
@@ -75,34 +81,52 @@ MAIL_PASSWORD=email_app_password
 
 `.env`와 `.env.docker`에는 민감한 정보가 포함되므로 Git에 커밋하지 않는다.
 
-### 2. 전체 컨테이너 빌드 및 실행
+### 2. 실행
 
 ```bash
 docker compose up -d --build
 ```
 
-위 명령어로 다음 컨테이너가 함께 실행된다.
+다음 컨테이너가 함께 실행된다.
 
 - `track-mysql`
 - `track-redis`
 - `track-app`
 
-### 3. 실행 상태 확인
+실행 상태와 애플리케이션 로그는 다음 명령어로 확인할 수 있다.
 
 ```bash
 docker compose ps
-```
-
-애플리케이션 로그를 확인한다.
-
-```bash
 docker compose logs --tail 50 app
 ```
 
-로그에 다음 문구가 출력되면 정상적으로 실행된 것이다.
+수동 헬스체크는 다음과 같이 수행한다.
+
+```bash
+curl -i http://localhost:8080/actuator/health
+```
+
+<br>
+
+## 클라우드 인프라 구조
+
+현재 자동 배포 환경은 AWS EC2 한 대에서 Docker Compose로 애플리케이션과 의존 서비스를 운영하는 구조다. 애플리케이션 이미지는 GitHub Container Registry(GHCR)에 저장되며, MySQL 데이터는 Docker named volume에 보존된다.
 
 ```text
-Started TrackApplication
+Developer
+   │ push to main
+   ▼
+GitHub Actions ── build/push ──▶ GHCR
+   │                               │
+   └──────── SSH deploy ───────────┘
+                   │ pull
+                   ▼
+             AWS EC2 / Docker Compose
+             ├─ track-app   :8080
+             ├─ MySQL 8.0   :3307 → :3306
+             └─ Redis 7     :6379
+                    │
+                    └─ Gmail SMTP (마감 알림)
 ```
 
 수동 헬스체크 방법은 다음과 같다.
@@ -111,27 +135,36 @@ Started TrackApplication
 curl -i http://localhost:8080/actuator/health
 ```
 
-### 4. 컨테이너 종료
+Kubernetes 매니페스트는 현재 GitHub Actions를 통한 EC2 자동 배포 경로와는 별도로 관리한다.
 
-```bash
-docker compose down
-```
+<br>
 
-컨테이너와 MySQL 데이터를 모두 삭제하려면 다음 명령어를 사용한다.
+## 배포 흐름
 
-```bash
-docker compose down -v
-```
+### CI
 
-> `-v` 옵션을 사용하면 MySQL 데이터가 저장된 볼륨도 삭제되므로 주의한다.
+`main` 브랜치에 push하거나 Pull Request를 생성하면 `.github/workflows/ci.yml`이 실행된다.
 
-### 5. 변경사항 반영 후 다시 실행
+1. 저장소 코드를 체크아웃한다.
+2. Temurin JDK 21을 설정한다.
+3. `./gradlew test`로 테스트를 수행한다.
 
-애플리케이션 코드를 수정한 뒤 이미지를 다시 빌드하려면 다음 명령어를 사용한다.
+통합 테스트는 Testcontainers의 MySQL 컨테이너를 이용한다.
 
-```bash
-docker compose up -d --build
-```
+### CD
+
+`main` 브랜치에 push하면 `.github/workflows/cd.yml`이 실행된다.
+
+1. 멀티 스테이지 Docker 이미지를 빌드한다.
+2. 이미지를 GHCR에 push한다.
+3. SSH로 EC2에 접속해 최신 코드를 가져온다.
+4. 새 이미지를 pull하고 애플리케이션 컨테이너를 교체한다.
+5. 최대 120초 동안 `/actuator/health`를 확인한다.
+6. 헬스체크가 실패하면 최근 애플리케이션 로그를 출력하고 배포를 실패 처리한다.
+
+동일 브랜치의 배포가 중복 실행되면 진행 중인 이전 작업을 취소해 최신 커밋만 배포한다.
+
+<br>
 
 ## 클라우드 인프라 구조
 
@@ -187,7 +220,56 @@ GitHub Actions ── build/push ──▶ GHCR
 
 ## 성능 최적화
 
-### 조회 인덱스
+### 테스트 환경
+
+Task 목록 조회 성능을 확인하기 위해 다음 조건에서 `EXPLAIN ANALYZE`와 k6 부하 테스트를 수행했다.
+
+- 전체 Task: 100,000건
+- 측정 프로젝트의 Task: 50,000건
+- 페이지 크기: 20건
+- 최대 가상 사용자: 10명
+- 테스트 시간: 50초
+- 측정 대상: 기본 목록, 상태·난이도 필터, 카테고리 필터, 깊은 페이지
+
+### 조회 쿼리 구조 개선
+
+기존 쿼리는 카테고리 조건이 없는 경우에도 `category_task`를 조인하고 `DISTINCT`와 `COUNT(DISTINCT)`를 수행했다.
+
+카테고리 조건의 유무에 따라 Repository 쿼리를 분리해 다음과 같이 변경했다.
+
+- 카테고리 조건이 없으면 `category_task` 조인을 수행하지 않음
+- 본문 쿼리의 `DISTINCT` 제거
+- Count 쿼리의 `COUNT(DISTINCT)` 제거
+- 카테고리 조건이 있을 때만 전용 JOIN 쿼리 실행
+
+쿼리 구조를 변경한 결과는 다음과 같다.
+
+| 조회 | 개선 전 | 개선 후 |
+| --- | ---: | ---: |
+| 기본 목록 본문 | 929ms | 141ms |
+| 기본 목록 COUNT | 348ms | 99ms |
+| 깊은 페이지 본문 | 1,193ms | 166ms |
+| 깊은 페이지 COUNT | 297ms | 91ms |
+| 카테고리 EXISTS 본문 | 384ms | JOIN 123ms |
+| 카테고리 EXISTS COUNT | 672ms | JOIN 36ms |
+
+불필요한 조인과 중복 제거 비용은 줄었지만, 기본 목록의 정렬과 깊은 OFFSET 처리, 상태·난이도 필터에는 추가 병목이 남아 있었다.
+
+### 복합 인덱스 적용
+
+기본 목록과 상태·난이도 조건의 조회 패턴에 맞춰 다음 복합 인덱스를 적용했다.
+
+```sql
+CREATE INDEX idx_task_project_due_task
+ON task (project_id, due_date, task_id);
+```
+
+```sql
+CREATE INDEX idx_task_project_status_difficulty_due_task
+ON task (project_id, status, difficulty, due_date, task_id);
+```
+
+`project_id`와 필터 조건을 앞에 배치하고, 정렬에 사용하는 `due_date`, `task_id`를 뒤에 배치했다.
 
 `task` 테이블에는 실제 조회 패턴에 맞춘 다음 복합 인덱스가 선언되어 있다.
 
@@ -199,7 +281,27 @@ GitHub Actions ── build/push ──▶ GHCR
 
 인덱스의 선두 컬럼을 프로젝트와 마감일 등 주요 필터에 맞추고, 정렬의 동률을 `task_id`로 해소한다. 작업 목록은 한 요청에서 최대 100개까지만 허용해 과도한 조회와 연관 데이터 로딩을 제한한다.
 
-### N+1 문제 해결
+#### 기본 목록 및 깊은 페이지
+
+| 조회 | 인덱스 적용 전 | 인덱스 적용 후 |
+| --- | ---: | ---: |
+| 첫 페이지 | 약 143ms | 약 0.2ms |
+| 깊은 페이지 | 약 166~204ms | 약 35.5ms |
+
+`idx_task_project_due_task`를 사용하면서 별도의 Sort 단계가 제거됐다. 첫 페이지는 인덱스 순서대로 20건만 읽고 종료한다.
+
+깊은 페이지는 정렬 비용은 제거됐지만, OFFSET 방식으로 인해 `page=2000&size=20` 조회 시 40,020건을 읽는 비용은 남아 있다.
+
+#### 상태·난이도 필터
+
+| 조회 | 인덱스 적용 전 | 인덱스 적용 후 |
+| --- | ---: | ---: |
+| 본문 | 약 236ms | 약 0.12ms |
+| COUNT | 약 143ms | 약 4.73ms |
+
+`idx_task_project_status_difficulty_due_task`를 사용해 조건에 맞는 인덱스 범위에서 첫 20건만 읽도록 변경됐다. 별도의 Sort 단계가 제거됐으며, COUNT 쿼리는 Task 본문 행을 조회하지 않고 커버링 인덱스로 처리한다.
+
+### N+1 문제 개선
 
 - 작업 목록을 DTO로 변환할 때 각 작업의 카테고리 컬렉션을 개별 조회하는 N+1 문제를 줄이기 위해 `Task.categories`에 `@BatchSize(size = 100)`을 적용했다. 페이지 최대 크기와 배치 크기를 동일하게 맞춰, 페이지 내 카테고리를 배치 쿼리로 로딩한다.
 - 마감 알림 대상 조회는 Task → Project → Member를 JPQL `join fetch`로 한 번에 가져온다. 알림 수신 이메일과 프로젝트명을 접근할 때 작업마다 추가 쿼리가 발생하지 않는다.
@@ -226,4 +328,31 @@ GitHub Actions ── build/push ──▶ GHCR
 - 이벤트 발행 전에 이력을 `PENDING`으로 생성하고, Consumer의 이메일 발송 결과에 따라 `SENT` 또는 `FAILED`로 변경한다. 이후 스케줄 실행에서는 `FAILED` 상태의 알림만 다시 발행한다.
 - 이력 상태 변경을 짧은 개별 트랜잭션으로 처리해 이메일 I/O 동안 DB 트랜잭션을 오래 유지하지 않는다.
 
-성능 회귀 확인을 위한 k6 시나리오는 `k6/task-list-baseline.js`에 있으며, 첫 페이지·복합 조건·카테고리·깊은 페이지 조회의 응답 시간을 각각 측정한다.
+### k6 부하 테스트 결과
+
+쿼리 구조 개선과 복합 인덱스 적용 전후를 동일한 조건으로 측정했다.
+
+| 조회 조건 | 지표 | 최적화 전 | 최적화 후 | 개선율 |
+| --- | --- | ---: | ---: | ---: |
+| 기본 첫 페이지 | 평균 | 3,290ms | 173ms | 94.7% 감소 |
+|  | p95 | 4,710ms | 498ms | 89.4% 감소 |
+|  | p99 | 5,050ms | 728ms | 85.6% 감소 |
+| 상태·난이도 | 평균 | 1,400ms | 108ms | 92.3% 감소 |
+|  | p95 | 2,220ms | 245ms | 89.0% 감소 |
+|  | p99 | 2,570ms | 549ms | 78.6% 감소 |
+| 카테고리 | 평균 | 460ms | 122ms | 73.4% 감소 |
+|  | p95 | 700ms | 260ms | 62.9% 감소 |
+|  | p99 | 980ms | 661ms | 32.6% 감소 |
+| 깊은 페이지 | 평균 | 4,030ms | 232ms | 94.2% 감소 |
+|  | p95 | 5,400ms | 553ms | 89.8% 감소 |
+|  | p99 | 5,830ms | 772ms | 86.8% 감소 |
+
+| 전체 지표 | 최적화 전 | 최적화 후 |
+| --- | ---: | ---: |
+| 총 요청 수 | 127건 | 353건 |
+| 처리량 | 2.47 req/s | 6.97 req/s |
+| 오류율 | 0% | 0% |
+| 최대 가상 사용자 | 10명 | 10명 |
+| 테스트 시간 | 50초 | 50초 |
+
+최적화 후 전체 처리량은 약 2.82배 증가했으며, 모든 조회 조건에서 평균 응답 시간이 감소했다. 성능 회귀 확인을 위한 k6 시나리오는 `k6/task-list-baseline.js`에서 관리한다.
