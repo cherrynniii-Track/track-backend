@@ -72,6 +72,10 @@ public class DeadlineNotificationService {
             return;
         }
 
+        if (history == null) {
+            return;
+        }
+
         TaskDueSoonEvent event = new TaskDueSoonEvent(
                 UUID.randomUUID(),
                 task.getId(),
