@@ -7,6 +7,7 @@ public record TaskDueSoonEvent(
         UUID eventId,
         Long taskId,
         String taskTitle,
+        String projectName,
         LocalDateTime dueDate,
         String recipientEmail,
         LocalDateTime occurredAt
